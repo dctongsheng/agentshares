@@ -68,6 +68,10 @@ python $SCRIPT get <id> --cursor 50 --limit 50
 
 ### Upload
 
+> **MANDATORY RULE: 上传对话前必须先执行敏感信息过滤，这是强规则，不可跳过。**
+>
+> **NEVER upload raw session files. ALWAYS redact sensitive information first. No exceptions.**
+
 **Before uploading, ALWAYS confirm with the user using AskUserQuestion. Do NOT upload directly.**
 
 Follow this workflow:
@@ -75,41 +79,34 @@ Follow this workflow:
 1. **Find session file** — Locate the current conversation file
    - Claude Code: `~/.claude/projects/<project-hash>/` — pick the most recently modified `.jsonl` file
    - Other agents: the conversation JSON file
-2. **Generate a suggested title** — Based on conversation content, create a concise descriptive title
-3. **Auto-detect source type** — Determine from current agent:
+2. **REDACT SENSITIVE INFO (MANDATORY — MUST DO THIS BEFORE ANYTHING ELSE)** — Create a redacted copy of the session file. This step is NON-NEGOTIABLE and MUST happen before generating titles, detecting skills, or any other upload preparation:
+   - Do NOT modify the original file
+   - Read the session file and scan for sensitive patterns:
+     - Database connection strings (`postgresql://...`, `mongodb://...`, `mysql://...`)
+     - API keys and tokens (`Bearer ...`, `sk-...`, `npg_...`, `ghp_...`, `gho_...`)
+     - Auth secrets (`AUTH_SECRET=...`, `SECRET_KEY=...`)
+     - File paths with usernames (`/Users/username/`, `/home/username/`)
+     - Passwords (`password=...`, `"password": "..."`)
+     - Email addresses, phone numbers, IP addresses
+     - Any environment variables containing secrets
+   - Replace all matches with `***REDACTED***` in a temp copy
+   - Upload the temp file, not the original
+3. **Generate a suggested title** — Based on conversation content, create a concise descriptive title
+4. **Auto-detect source type** — Determine from current agent:
    - Claude Code → `claude-code`
    - Other agents → corresponding type (`openai`, `cursor`, `windsurf`, `trae`, `aider`, `copilot`, `cline`, `openclaw`)
-4. **Detect skills used in this conversation** —
+5. **Detect skills used in this conversation** —
    - Read the session JSONL file, search for skill names in `system-reminder` messages or `<command-name>/skill-name</command-name>` patterns
    - For each detected skill, read its SKILL.md to get name, description, and content
    - Build the `--skills` JSON array: `[{"name":"skill-name","description":"...","content":"..."}]`
    - If no skills detected, leave skills empty
-5. **Ask user to confirm** — Use AskUserQuestion with these fields pre-filled:
+6. **Ask user to confirm** — Use AskUserQuestion with these fields pre-filled:
    - Title (editable)
    - Source type (selectable)
    - Skills detected (show list, allow removal)
    - Tags (optional, editable)
    - Description (optional, editable)
-6. **Redact sensitive info** — Before uploading, create a redacted copy of the session file:
-   - Do NOT modify the original file
-   - Use sed or Python to replace sensitive patterns in a temp copy:
-     ```bash
-     # Example: redact to a temp file
-     sed -E \
-       -e 's|postgresql://[^ "]*|postgresql://***REDACTED***|g' \
-       -e 's|mongodb://[^ "]*|mongodb://***REDACTED***|g' \
-       -e 's|(Bearer )[A-Za-z0-9_.-]+|\1***REDACTED***|g' \
-       -e 's|sk-[A-Za-z0-9]{20,}|sk-***REDACTED***|g' \
-       -e 's|npg_[A-Za-z0-9]{20,}|npg_***REDACTED***|g' \
-       -e 's|ghp_[A-Za-z0-9]{36}|ghp_***REDACTED***|g' \
-       -e 's|(AUTH_SECRET[= "]*)[^ ",]+|\1***REDACTED***|g' \
-       -e 's|"/Users/[^/]+/|"/Users/***REDACTED***/|g' \
-       -e 's|/home/[^/]+/|/home/***REDACTED***/|g' \
-       -e 's|(password[= ":]+)[^ ",]+|\1***REDACTED***|gI' \
-       session.jsonl > /tmp/upload_session.jsonl
-     ```
-   - Upload the temp file (`/tmp/upload_session.jsonl`), not the original
-   - Clean up the temp file after upload
+   - Show a summary of what was redacted (e.g., "已过滤: 2个API密钥, 1个数据库连接串, 3个文件路径")
 7. **Upload** — Only after redaction and user confirmation, run the upload command
 
 **IMPORTANT: Determine the current agent before uploading.**
