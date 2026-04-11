@@ -19,7 +19,43 @@ This saves credentials to `~/.agent-share-config.json` and a session cookie to `
 
 Override base URL via `--url`, `AGENT_SHARE_URL` env var, or config file.
 
+## First-Time Setup
+
+**Every time this skill is triggered, FIRST check if the user is registered:**
+
+Check if `~/.agent-share-config.json` exists and contains valid credentials:
+```bash
+cat ~/.agent-share-config.json
+```
+
+If the file does NOT exist or is missing `email`/`apiKey` fields, this is a first-time user. Follow this onboarding flow:
+
+1. **Welcome**: "Welcome to Agent Share! Let me help you set up."
+2. **Ask** via AskUserQuestion: "Register a new account" or "Login with existing account"
+3. **Register** — ask for email, password, nickname, then run:
+   ```bash
+   python scripts/agent_share.py register --email <email> --password <password> --nickname <nickname>
+   ```
+4. **Login** — ask for email, password, then run:
+   ```bash
+   python scripts/agent_share.py login --email <email> --password <password>
+   ```
+5. **After success**, introduce the platform:
+
+> "Agent Share is ready! Here's what you can do:
+> - **Upload** conversations to share with the community
+> - **Browse** and search conversations from others
+> - **Like, bookmark, comment** on interesting conversations
+> - **Follow** other users
+> - **Credits** — earn and spend credits for premium content
+> - **Skills** — discover useful skills
+>
+> Try saying: 'browse latest conversations' or 'upload this session'"
+
 ## Decision Tree
+
+```
+First: check ~/.agent-share-config.json → if missing, go to First-Time Setup
 
 ```
 What does the user want?
