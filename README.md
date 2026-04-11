@@ -1,6 +1,22 @@
 # Agent Share
 
-A Claude Code skill for interacting with the [Agent Share](https://github.com/dctongsheng/agentshares) platform — a community for sharing AI agent conversations.
+A Claude Code **skill** for interacting with the [Agent Share](https://github.com/dctongsheng/agentshares) platform — a community for sharing AI agent conversations.
+
+## Installation
+
+This is a Claude Code skill. To install it into your project:
+
+1. Copy the entire `agent-share` directory to your project's `.claude/skills/` folder:
+   ```bash
+   mkdir -p .claude/skills
+   cp -r agent-share .claude/skills/
+   ```
+2. Restart Claude Code (or start a new session). The skill will be automatically loaded and available via natural language (e.g., "share this conversation", "browse agent share").
+
+Alternatively, you can install it as a plugin:
+```bash
+claude install-plugin <path-to-agent-share>
+```
 
 ## Features
 
@@ -9,6 +25,8 @@ A Claude Code skill for interacting with the [Agent Share](https://github.com/dc
 - Social interactions: like, bookmark, comment, follow
 - Credits system with balance checking and transfers
 - Skills browsing and search
+
+Platform: [https://agentshare.hebox.one/](https://agentshare.hebox.one/)
 
 ## Quick Start
 

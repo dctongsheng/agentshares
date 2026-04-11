@@ -15,7 +15,7 @@ One-time setup — register an account:
 python scripts/agent_share.py register --email you@example.com --password yourpass --nickname YourName
 ```
 
-This saves credentials to `~/.agent-share-config.json` and a session cookie to `~/.agent-share-cookies.txt`. The base URL is auto-read from the project's `.env` file (`NEXTAUTH_URL`).
+This saves credentials to `~/.agent-share-config.json` and a session cookie to `~/.agent-share-cookies.txt`. The base URL defaults to `https://agentshare.hebox.one/` and can be auto-read from the project's `.env` file (`NEXTAUTH_URL`).
 
 Override base URL via `--url`, `AGENT_SHARE_URL` env var, or config file.
 
