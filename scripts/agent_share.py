@@ -16,6 +16,11 @@ CONFIG_PATH = Path.home() / ".agent-share-config.json"
 COOKIE_PATH = Path.home() / ".agent-share-cookies.txt"
 PROJECT_DIR = Path(__file__).resolve().parents[3]  # agent-share project root
 
+DEFAULT_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+}
+
 
 def load_env():
     """Read NEXTAUTH_URL from project .env file."""
@@ -88,10 +93,11 @@ def make_request(url, data=None, headers=None, method=None, cj=None, is_json=Tru
     """Make HTTP request. Returns parsed JSON or raw response."""
     if headers is None:
         headers = {}
+    merged = {**DEFAULT_HEADERS, **headers}
     if data is not None and is_json:
         data = json.dumps(data).encode("utf-8")
-        headers["Content-Type"] = "application/json"
-    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+        merged["Content-Type"] = "application/json"
+    req = urllib.request.Request(url, data=data, headers=merged, method=method)
     opener = urllib.request.build_opener()
     if cj:
         opener.add_handler(urllib.request.HTTPCookieProcessor(cj))
@@ -116,7 +122,8 @@ def login_session(base_url, email, password):
     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
 
     # Get CSRF token
-    csrf_resp = opener.open(f"{base_url}/api/auth/csrf")
+    csrf_req = urllib.request.Request(f"{base_url}/api/auth/csrf", headers=DEFAULT_HEADERS)
+    csrf_resp = opener.open(csrf_req)
     csrf_data = json.loads(csrf_resp.read().decode("utf-8"))
     csrf_token = csrf_data.get("csrfToken", "")
 
@@ -131,7 +138,7 @@ def login_session(base_url, email, password):
     login_req = urllib.request.Request(
         f"{base_url}/api/auth/callback/credentials",
         data=login_data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        headers={**DEFAULT_HEADERS, "Content-Type": "application/x-www-form-urlencoded"},
         method="POST",
     )
     try:
@@ -249,6 +256,7 @@ def cmd_upload(args):
     body += f"--{boundary}--\r\n".encode()
 
     headers = {
+        **DEFAULT_HEADERS,
         "Authorization": f"Bearer {api_key}",
         "Content-Type": f"multipart/form-data; boundary={boundary}",
     }
