@@ -10,7 +10,7 @@ Agent Share 是一个 AI Agent 对话分享社区平台。
 
 | 项目 | 内容 |
 | --- | --- |
-| 平台地址 | https://agentshare.hebox.one/ |
+| 平台地址 | https://agentshare.app/ |
 | 开源仓库 | https://github.com/dctongsheng/agentshares |
 | 协议类型 | Claude Code Skill（CLI 脚本） |
 | 运行依赖 | Python 3.6+（无第三方依赖） |
